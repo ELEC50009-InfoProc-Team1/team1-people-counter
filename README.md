@@ -2,7 +2,7 @@
 
 ![WhatsApp Image 2026-03-12 at 20 26 59](https://github.com/user-attachments/assets/0491e398-4aef-4fe1-8482-70df0dd10904)
 
-This repository details the design, implementation, and evaluation of a real-time, FPGA-accelerated IoT system for room occupancy monitoring.
+This repository details the design and implementation of a real-time, FPGA-accelerated IoT system for room occupancy monitoring.
 
 For this repository, node refers to the PYNQ-Z1 board running both PL and PS.
 
