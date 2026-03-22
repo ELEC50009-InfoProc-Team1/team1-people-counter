@@ -1,58 +1,47 @@
 # People Counter — Information Processing Team 1
 
-## Project Setup
+![WhatsApp Image 2026-03-12 at 20 26 59](https://github.com/user-attachments/assets/0491e398-4aef-4fe1-8482-70df0dd10904)
 
-**1. Clone the repo**
-```bash
-git clone https://github.com/ELEC50009-InfoProc-Team1/people-counter.git
-```
+This repository details the design, implementation, and evaluation of a real-time, FPGA-accelerated IoT system for room occupancy monitoring.
+
+For this repository, node refers to the PYNQ-Z1 board running both PL and PS.
+
+FILE TREE
+
+---
+
+## Node: Programmable Logic Setup
+
+In a similar fashion to Lab 2 ...
+
+**1. Launch Vivado**  
+Open a new Vivado window and in the TCL command window cd to `C:/pathtorepo/node`.
 
 
-**2. Launch Vivado**  
-Similar to Lab 2, open a new Vivado window and in the TCL command window cd to where the git repo is . 
-
-
-**3. Build HLS IPs first**
+**2. Build HLS IPs first**
 ```bash
 source build_ip.tcl
 ```
 
-**4. Rebuild the Vivado project**
+**3. Rebuild the Vivado project**
 ```bash
 source base.tcl
 ```
 
----
-
 The script should add the constraints and wrapper automatically. If not then:
 - Create a HDL wrapper for the block design
-- Include the constraints file
+- Include the [constraints file](node/constraints.xdc)
 
-It should compile first time ✌🏾  
+## Node: Processing System Setup
+In Jupyter Notebook, add the following 4 files to the same directory:
+- people_counter.bit
+- people_counter.hwh
+- [counter.py](node/sw/counter.py)
+- [ui.py](node/sw/ui.py)
 
-## Pulling from remote
-When pulling from remote, to avoid unnecessary errors in Vivado it is best to clean your folder structure first:  
+Run `python counter.py` to see the arguments required. An example command would look like:
 ```bash
-git pull --rebase
-git clean -fxd
-```
-Now repeat the project setup steps from step 2.  
-
-> [!CAUTION]
-> `git clean` will delete everything in Vivado. If you have made changes to the block diagramn, follow the below steps or else it WILL be deleted. Only `base.tcl` is used to store the entire design. Don't ask me how ik ✌🏾(even after I made this process)
-
-## Adding Something to the Main Block Design
-
-1. Make your changes in Vivado and validate the design.
-2. In the Vivado Tcl console:
-```tcl
-write_project_tcl -force C:/pathtorepo/base.tcl
-```
-4. Commit:
-```bash
-git add .
-git commit -m "Description of what you changed"
-git push
+python counter.py --hdmi-out=NORMAL --bg-frame=100 --orientation=DOWN --api-key=1483433276495450113_a8be6969b22f222eb13fc9b31705a5d09c2cc2498e9ac3ed237d0db7cc5158b82fad8b6b68648ee27b84575e4cf59b96
 ```
 
 ---
