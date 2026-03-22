@@ -1,0 +1,6 @@
+# Vitis HLS build artifacts
+*/solution*/
+*/hls.app
+*/.apc/.src/
+*/.apc/.tb/
+vitis_hls.log

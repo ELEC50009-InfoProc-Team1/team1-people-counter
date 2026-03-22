@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<autopilotfilemapping:AutoPilotFileMapping xmlns:autopilotfilemapping="www.autoesl.com/autopilotfilemapping">
+  <source>
+    <originFiles name="bg_subtract.hpp" path="C:\Users\ryang\Documents\University\Year2\InformationProcessing\FinalProject\hw\ip\hls\bg_subtract\bg_subtract.hpp"/>
+    <originFiles name="bg_subtract.cpp" path="C:\Users\ryang\Documents\University\Year2\InformationProcessing\FinalProject\hw\ip\hls\bg_subtract\bg_subtract.cpp"/>
+  </source>
+  <testbench/>
+</autopilotfilemapping:AutoPilotFileMapping>

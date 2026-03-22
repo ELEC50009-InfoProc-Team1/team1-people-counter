@@ -1,0 +1,23 @@
+# Vivado project generated folders - all inside people_counter/
+people_counter/
+NA/
+
+# HLS generated outputs
+ip/*/solution*/
+ip/*/*.ap_workspace/
+ip/*/*.zip
+ip/*/vivado_hls.app
+
+# Bitstreams
+*.bit
+*.bin
+*.ltx
+*.mmi
+
+# Logs
+*.log
+*.jou
+*.str
+*.bak
+.Xil/
+.claude

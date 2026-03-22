@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<autopilotfilemapping:AutoPilotFileMapping xmlns:autopilotfilemapping="www.autoesl.com/autopilotfilemapping">
+  <source>
+    <originFiles name="gaussian_blur.cpp" path="C:\Users\ryang\Documents\University\Year2\InformationProcessing\FinalProject\hw\ip\hls\gaussian_blur.cpp"/>
+    <originFiles name="gaussian_blur.hpp" path="C:\Users\ryang\Documents\University\Year2\InformationProcessing\FinalProject\hw\ip\hls\gaussian_blur.hpp"/>
+  </source>
+  <testbench/>
+</autopilotfilemapping:AutoPilotFileMapping>
