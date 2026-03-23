@@ -6,14 +6,14 @@ This repository details the design and implementation of a real-time, FPGA-accel
 
 For this repository, node refers to the PYNQ-Z1 board running both PL and PS.
 
-FILE TREE
-
 ---
 
-## Node(s)
+## Project Setup
+
+### Node(s)
 
 Please refer to [node/README.md](node/README.md) for instructions on setting up each node.
 
-## Server
+### Server
 
 Please refer to [server/README.md](server/README.md) for instructions on setting up the server.
