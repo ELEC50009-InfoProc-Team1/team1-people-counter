@@ -19,14 +19,14 @@ source base.tcl
 
 The script should add the constraints and wrapper automatically. If not then:
 - Create a HDL wrapper for the block design
-- Include the [constraints file](node/constraints.xdc)
+- Include the [constraints file](constraints.xdc)
 
 ## Node: Processing System Setup
 In Jupyter Notebook, add the following 4 files to the same directory:
 - people_counter.bit
 - people_counter.hwh
-- [counter.py](node/sw/counter.py)
-- [ui.py](node/sw/ui.py)
+- [counter.py](sw/counter.py)
+- [ui.py](sw/ui.py)
 
 _Note: If you place all the files under home/xilinx/jupyter_notebook/people_counter the script will auto detect the bitstream files._
 
