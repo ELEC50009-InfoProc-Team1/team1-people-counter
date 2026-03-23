@@ -1,0 +1,10 @@
+{
+  "hostname": "infoproc.localhost.uk",
+  "apiLocation": "http://infoproc.localhost.uk:3000/api/v1",
+  "auth": {
+    "location": "http://infoproc.localhost.uk:3000/auth/"
+  },
+  "contact": {
+    "admin": ""
+  }
+}

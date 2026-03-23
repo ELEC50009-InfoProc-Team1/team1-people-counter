@@ -1,0 +1,15 @@
+{
+  "mode": {
+    "toggleAria": "toggle light/dark mode",
+    "switchTo": "switch to {{mode}} mode",
+    "light": "light",
+    "dark": "dark"
+  },
+  "navigation": {
+    "go-back": "go back",
+    "retry": "retry"
+  },
+  "contact": {
+    "admin-fallback": "the administator of this instance"
+  }
+}

@@ -1,0 +1,21 @@
+# env stuff
+.env
+
+# built typescript
+build/
+
+# built client stuff
+public/**
+!public/README.md
+/index.html
+
+# application data
+data/**
+!data/README.md
+
+# logs
+logs/**
+!logs/README.md
+
+# largest folder in existence
+node_modules/

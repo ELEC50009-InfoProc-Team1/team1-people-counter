@@ -1,0 +1,14 @@
+.env
+*/build/
+
+server/public/
+server/index.html
+
+data/*
+!data/README.md
+
+logs/*
+!logs/README.md
+
+*/node_modules/
+*/.react-router

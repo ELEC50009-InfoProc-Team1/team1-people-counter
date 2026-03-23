@@ -1,0 +1,8 @@
+{
+  "basehostname": "infoproc.localhost.uk:3000",
+  "listen": "infoproc.localhost.uk",
+  "cors": {
+    "origin": "http://infoproc.localhost.uk:5173",
+    "credentials": true
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "console": {
+    "level": "debug"
+  },
+  "file": {
+    "level": "info"
+  }
+}

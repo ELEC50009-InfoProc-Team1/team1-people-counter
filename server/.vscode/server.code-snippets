@@ -1,0 +1,32 @@
+{
+    "Create new route": {
+        "prefix": "route",
+        "body": [
+            "import type { RouteObject } from \"~/managers/ServerManager.js\";",
+            "",
+            "export default {",
+            "    path: \"/${1:${TM_FILENAME_BASE:}}\",",
+            "    priority: ${2:0},",
+            "    methods: {",
+            "        get: [",
+            "            (req, res, next) => {",
+            "                $0",
+            "            }",
+            "        ]",
+            "    }",
+            "} as RouteObject;",
+            ""
+        ]
+    },
+    "Create new middleware": {
+        "prefix": "middleware",
+        "body": [
+            "import type { Handler } from \"express\";",
+            "",
+            "export const ${1:${TM_FILENAME_BASE:}}: Handler = (req, res, next) => {",
+            "    $0",
+            "};",
+            ""
+        ]
+    }
+}

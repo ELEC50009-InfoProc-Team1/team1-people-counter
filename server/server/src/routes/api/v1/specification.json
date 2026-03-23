@@ -1,0 +1,2666 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "people counter",
+    "description": "Provides functionality for team 1's people counter.",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "http://infoproc.localhost.uk:3000/api/v1",
+      "description": "Development server"
+    },
+    {
+      "url": "https://infoproc.unigeorge.uk/api/v1",
+      "description": "Production server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "Cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session"
+      },
+      "APIKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      }
+    },
+    "schemas": {
+      "StandardResponse": {
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "The HTTP status code."
+          },
+          "message": {
+            "type": "string",
+            "description": "A short message explaining the result."
+          }
+        },
+        "example": {
+          "code": 404,
+          "message": "The requested resource could not be found."
+        }
+      },
+      "Snowflake": {
+        "type": "string",
+        "example": "0123456789876543210",
+        "description": "A Snowflake ID.",
+        "externalDocs": {
+          "url": "https://en.wikipedia.org/wiki/Snowflake_ID"
+        }
+      },
+      "AuthMethod": {
+        "type": "string",
+        "enum": [
+          "local",
+          "google"
+        ]
+      },
+      "Permission": {
+        "type": "string",
+        "enum": [
+          "ADMINISTRATOR",
+          "CREATE_ORGANISATION",
+          "MODIFY_ORGANISATION",
+          "DELETE_ORGANISATION",
+          "CREATE_DEPARTMENT",
+          "MODIFY_DEPARTMENT",
+          "DELETE_DEPARTMENT",
+          "CREATE_BUILDING",
+          "MODIFY_BUILDING",
+          "DELETE_BUILDING",
+          "CREATE_FLOOR",
+          "MODIFY_FLOOR",
+          "DELETE_FLOOR",
+          "CREATE_ROOM",
+          "MODIFY_ROOM",
+          "DELETE_ROOM",
+          "CREATE_DOORWAY",
+          "MODIFY_DOORWAY",
+          "DELETE_DOORWAY",
+          "CREATE_CAMERA",
+          "MODIFY_CAMERA",
+          "DELETE_CAMERA"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Snowflake",
+            "description": "This user's ID."
+          },
+          "name": {
+            "type": "string",
+            "description": "This user's display name.",
+            "maxLength": 48
+          }
+        }
+      },
+      "Session": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Snowflake"
+          },
+          "userID": {
+            "$ref": "#/components/schemas/Snowflake"
+          },
+          "created": {
+            "type": "integer",
+            "description": "The timestamp of this session's creation.",
+            "example": 1771161739488
+          },
+          "expires": {
+            "type": "integer",
+            "description": "The timestamp this session expires at.",
+            "example": 1781161739488
+          }
+        }
+      },
+      "Organisation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Snowflake"
+          },
+          "name": {
+            "type": "string",
+            "example": "Imperial College London"
+          }
+        }
+      },
+      "Department": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Snowflake"
+          },
+          "name": {
+            "type": "string",
+            "example": "Electronic & Electrical Engineering"
+          },
+          "organisationID": {
+            "$ref": "#/components/schemas/Snowflake"
+          }
+        }
+      },
+      "Building": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Snowflake"
+          },
+          "name": {
+            "type": "string",
+            "example": "EEE"
+          },
+          "departmentID": {
+            "$ref": "#/components/schemas/Snowflake"
+          }
+        }
+      },
+      "Floor": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Snowflake"
+          },
+          "name": {
+            "type": "string",
+            "example": "Level 4"
+          },
+          "buildingID": {
+            "$ref": "#/components/schemas/Snowflake"
+          }
+        }
+      },
+      "Room": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Snowflake"
+          },
+          "name": {
+            "type": "string",
+            "example": "408"
+          },
+          "floorID": {
+            "$ref": "#/components/schemas/Snowflake"
+          },
+          "maxCapacity": {
+            "type": "integer",
+            "example": 80
+          },
+          "currentNoOfPeople": {
+            "type": "integer",
+            "example": 43
+          }
+        }
+      },
+      "Doorway": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Snowflake"
+          },
+          "inRoomID": {
+            "$ref": "#/components/schemas/Snowflake",
+            "description": "The ID of the room to increase the count of on an 'enter room' event."
+          },
+          "outRoomID": {
+            "$ref": "#/components/schemas/Snowflake",
+            "description": "The ID of the room to increase the count of on an 'exit room' event."
+          }
+        }
+      },
+      "Camera": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Snowflake"
+          },
+          "userID": {
+            "$ref": "#/components/schemas/Snowflake",
+            "description": "The user this camera acts as. Should be unique."
+          },
+          "name": {
+            "type": "string",
+            "example": "example camera"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Snowflake",
+            "description": "The ID of the doorway this camera is positioned on."
+          }
+        }
+      }
+    },
+    "responses": {
+      "ActionSuccessful": {
+        "description": "The action was carried out successfully.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/StandardResponse"
+            },
+            "example": {
+              "code": 200,
+              "message": "Action carried out successfully."
+            }
+          }
+        }
+      },
+      "MalformedRequest": {
+        "description": "The server couldn't understand the user's request/the user's request was invalid.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/StandardResponse"
+            },
+            "example": {
+              "code": 400,
+              "message": "Invalid parameters/request body."
+            }
+          }
+        }
+      },
+      "UserNotAuthenticated": {
+        "description": "The user is not logged in/using a valid API key.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/StandardResponse"
+            },
+            "example": {
+              "code": 401,
+              "message": "You are not logged in/using a valid API key."
+            }
+          }
+        }
+      },
+      "UserNotAuthorised": {
+        "description": "The user is not authorised to carry out the intended action.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/StandardResponse"
+            },
+            "example": {
+              "code": 403,
+              "message": "You are not authorised to carry out this action."
+            }
+          }
+        }
+      },
+      "ResourceNotFound": {
+        "description": "The requested resource could not be found.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/StandardResponse"
+            },
+            "example": {
+              "code": 404,
+              "message": "The requested resource could not be found."
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "auth",
+      "description": "Authentication-related endpoints."
+    },
+    {
+      "name": "camera",
+      "description": "Camera-related endpoints."
+    },
+    {
+      "name": "user",
+      "description": "User-related endpoints."
+    },
+    {
+      "name": "frontend",
+      "description": "Endpoints designed for adding function to the frontend."
+    },
+    {
+      "name": "structure",
+      "description": "Data structure-related endpoints."
+    }
+  ],
+  "paths": {
+    "/auth/methods/login": {
+      "get": {
+        "summary": "Get login methods.",
+        "description": "Get a list of the authentication methods currently available for logging in.",
+        "tags": [
+          "auth",
+          "frontend"
+        ],
+        "responses": {
+          "200": {
+            "description": "The requested authentication methods.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuthMethod"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/methods/signup": {
+      "get": {
+        "summary": "Get signup methods.",
+        "description": "Get a list of the authentication methods currently available for signing up.",
+        "tags": [
+          "auth",
+          "frontend"
+        ],
+        "responses": {
+          "200": {
+            "description": "The requested authentication methods.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuthMethod"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/me": {
+      "get": {
+        "summary": "Get your own user object.",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Your user object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          }
+        }
+      }
+    },
+    "/user": {
+      "post": {
+        "summary": "Create a new user.",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "requestBody": {
+          "description": "The user data to set. The ID field is ignored.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          }
+        }
+      }
+    },
+    "/user/{id}": {
+      "get": {
+        "summary": "Get a user object.",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The user's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Modify a user object.",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The user's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "description": "The user data to modify. The ID field is ignored.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The modified user object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a user object.",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The user's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ActionSuccessful"
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/user/{id}/can/{permission}": {
+      "get": {
+        "summary": "Check if a user can carry out an action.",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The user's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "permission",
+            "description": "The permission.",
+            "schema": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Whether or not the action can be carried out.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "able": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/user/{id}/permissions": {
+      "get": {
+        "summary": "Get a user's permissions.",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The user's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user's allowed permissions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "permissions": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Permission"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update a user's permissions.",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The user's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "description": "The changes to the user's permissions.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The user's modified allowed permissions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "permissions": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Permission"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/user/{id}/apikey": {
+      "post": {
+        "summary": "Create an API key for a user.",
+        "tags": [
+          "user"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The user's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The created API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "example": "0123456789876543210_aihweaukdyweilduw8olduywe8aldy7aikd"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/organisation": {
+      "post": {
+        "summary": "Create an organisation object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "requestBody": {
+          "description": "The organisation data to set. The ID field is ignored.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Organisation"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created organisation object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organisation"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/organisation/{id}": {
+      "get": {
+        "summary": "Get an organisation object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The organisation's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The organisation object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organisation"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Modify an organisation object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The organisation's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "description": "The organisation data to modify. The ID field is ignored.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Organisation"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The modified organisation object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organisation"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an organisation object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The organisation's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ActionSuccessful"
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/organisation/all": {
+      "get": {
+        "summary": "Get all organisations this user can see.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The organisation objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "organisations": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Organisation"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/department": {
+      "post": {
+        "summary": "Create an department object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "requestBody": {
+          "description": "The department data to set. The ID field is ignored.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Department"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created department object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Department"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/department/{id}": {
+      "get": {
+        "summary": "Get an department object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The department's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The department object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Department"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Modify an department object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The department's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "description": "The department data to modify. The ID field is ignored.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Department"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The modified department object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Department"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an department object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The department's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ActionSuccessful"
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/department/all": {
+      "get": {
+        "summary": "Get all departments this user can see.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The department objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cameras": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Department"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/building": {
+      "post": {
+        "summary": "Create an building object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "requestBody": {
+          "description": "The building data to set. The ID field is ignored.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Building"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created building object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Building"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/building/{id}": {
+      "get": {
+        "summary": "Get an building object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The building's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The building object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Building"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Modify an building object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The building's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "description": "The building data to modify. The ID field is ignored.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Building"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The modified building object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Building"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an building object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The building's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ActionSuccessful"
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/building/all": {
+      "get": {
+        "summary": "Get all buildings this user can see.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The building objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "buildings": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Building"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/floor": {
+      "post": {
+        "summary": "Create an floor object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "requestBody": {
+          "description": "The floor data to set. The ID field is ignored.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Floor"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created floor object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Floor"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/floor/{id}": {
+      "get": {
+        "summary": "Get an floor object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The floor's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The floor object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Floor"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Modify an floor object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The floor's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "description": "The floor data to modify. The ID field is ignored.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Floor"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The modified floor object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Floor"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an floor object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The floor's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ActionSuccessful"
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/floor/all": {
+      "get": {
+        "summary": "Get all floors this user can see.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The floor objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "floors": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Floor"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/room": {
+      "post": {
+        "summary": "Create an room object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "requestBody": {
+          "description": "The room data to set. The ID field is ignored.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Room"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created room object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Room"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/room/{id}": {
+      "get": {
+        "summary": "Get an room object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The room's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The room object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Room"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Modify an room object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The room's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "description": "The room data to modify. The ID field is ignored.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Room"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The modified room object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Room"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an room object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The room's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ActionSuccessful"
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/room/all": {
+      "get": {
+        "summary": "Get all rooms this user can see.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The room objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rooms": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Room"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/doorway": {
+      "post": {
+        "summary": "Create an doorway object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "requestBody": {
+          "description": "The doorway data to set. The ID field is ignored.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Doorway"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created doorway object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Doorway"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/doorway/{id}": {
+      "get": {
+        "summary": "Get an doorway object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The doorway's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The doorway object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Doorway"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Modify an doorway object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The doorway's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "description": "The doorway data to modify. The ID field is ignored.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Doorway"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The modified doorway object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Doorway"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an doorway object.",
+        "tags": [
+          "structure"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The doorway's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ActionSuccessful"
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/camera": {
+      "post": {
+        "summary": "Create an camera object.",
+        "tags": [
+          "structure",
+          "camera"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "requestBody": {
+          "description": "The camera data to set. The ID field is ignored.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Camera"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created camera object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Camera"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/camera/me": {
+      "get": {
+        "summary": "Get the camera object linked to this user.",
+        "tags": [
+          "camera"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The camera object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Camera"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/camera/all": {
+      "get": {
+        "summary": "Get all cameras this user can see.",
+        "tags": [
+          "camera"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The camera objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cameras": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Camera"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/camera/{id}": {
+      "get": {
+        "summary": "Get an camera object.",
+        "tags": [
+          "structure",
+          "camera"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The camera's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The camera object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Camera"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Modify an camera object.",
+        "tags": [
+          "structure",
+          "camera"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The camera's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "description": "The camera data to modify. The ID field is ignored.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Camera"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The modified camera object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Camera"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an camera object.",
+        "tags": [
+          "structure",
+          "camera"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The camera's ID.",
+            "schema": {
+              "$ref": "#/components/schemas/Snowflake"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ActionSuccessful"
+          },
+          "400": {
+            "$ref": "#/components/responses/MalformedRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
+    "/trigger/enterroom": {
+      "post": {
+        "summary": "Trigger an 'enter room' event.",
+        "description": "Trigger an 'enter room' event. The corresponding camera/doorway/rooms will be figured out through the ID of the user submitting this request.",
+        "tags": [
+          "camera"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ActionSuccessful"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          }
+        }
+      }
+    },
+    "/trigger/exitroom": {
+      "post": {
+        "summary": "Trigger an 'exit room' event.",
+        "description": "Trigger an 'exit room' event. The corresponding camera/doorway/rooms will be figured out through the ID of the user submitting this request.",
+        "tags": [
+          "camera"
+        ],
+        "security": [
+          {
+            "Cookie": []
+          },
+          {
+            "APIKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ActionSuccessful"
+          },
+          "401": {
+            "$ref": "#/components/responses/UserNotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/UserNotAuthorised"
+          }
+        }
+      }
+    }
+  }
+}

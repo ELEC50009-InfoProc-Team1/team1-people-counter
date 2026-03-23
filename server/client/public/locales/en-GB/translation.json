@@ -1,0 +1,42 @@
+{
+  "auth": {
+    "sign-in": "sign in",
+    "dont-have-an-account": "don't have an account?",
+    "request-account-here": "request one here!",
+    "unsupported-authentication-method": "unsupported authentication method",
+    "login-error": "couldn't log in",
+    "or": "or",
+    "generic-login-error-descriptor": "something happened and I couldn't log you in.",
+    "local": {
+      "username": "username",
+      "password": "password",
+      "invalid-username-password": "invalid username and/or password :(",
+      "forgot-password": "forgot password?",
+      "sign-in-button": "sign in",
+      "remember-me": "remember me"
+    },
+    "cant-load-login": "Can't load login :(",
+    "cant-load-login-details": "I can't seem to load the login settings. Please check your internet connection.\nIf you continue to get this error, please contact {{admin}}.",
+    "google": {
+      "login-with-google": "login with google",
+      "signup-with-google": "sign up with google"
+    },
+    "sign-up": "sign up",
+    "generic-signup-error-descriptor": "something happened and I couldn't sign you up..."
+  },
+  "http": {
+    "status": {
+      "400": "You provided invalid information.",
+      "401": "You are not logged in.",
+      "403": "You don't have permission to access this page.",
+      "404": "This page can't be found on the server. It may have moved or been deleted.",
+      "418": "The server has rather unfortunately decided to become a teapot.",
+      "500": "The server couldn't handle your request. Please try again later.\\nIf this issue persists, please contact {{admin}} and provide the steps you followed to cause this error.",
+      "fallback": "Something died in an unexpected way - please report this to {{admin}}."
+    }
+  },
+  "react": {
+    "frontend-error": "frontend error",
+    "frontend-error-details": "there's been a frontend error and unfortunately this page can't be loaded at the minute. please report this issue to the administrator of this instance of People Counter!"
+  }
+}

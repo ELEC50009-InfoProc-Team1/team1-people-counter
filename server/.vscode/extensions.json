@@ -1,0 +1,13 @@
+{
+    "recommendations": [
+        "eamodio.gitlens",
+        "tonybaloney.vscode-pets",
+        "vivaxy.vscode-conventional-commits",
+        "editorconfig.editorconfig",
+        "davidanson.vscode-markdownlint",
+        "42crunch.vscode-openapi",
+        "alexcvzz.vscode-sqlite",
+        "gruntfuggly.todo-tree",
+        "lokalise.i18n-ally"
+    ]
+}
