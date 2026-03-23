@@ -45,3 +45,7 @@ python counter.py --hdmi-out=NORMAL --bg-frame=100 --orientation=DOWN --api-key=
 ```
 
 ---
+
+## Server
+
+Please refer to [server/README.md](server/README.md) for instructions on setting up the server.
